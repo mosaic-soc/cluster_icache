@@ -82,10 +82,10 @@ module snitch_icache
   output logic                     [NR_FETCH_PORTS-1:0] inst_ready_o,
   output logic                     [NR_FETCH_PORTS-1:0] inst_error_o,
 
-  input  sram_cfg_data_t     sram_cfg_data_i,
-  input  sram_cfg_tag_t      sram_cfg_tag_i,
-  output sram_cfg_out_data_t sram_cfg_out_data_o,
-  output sram_cfg_out_tag_t  sram_cfg_out_tag_o,
+  input  sram_cfg_data_t     [CFG.WAY_COUNT-1:0] sram_cfg_data_i,
+  input  sram_cfg_tag_t      [CFG.WAY_COUNT-1:0] sram_cfg_tag_i,
+  output sram_cfg_out_data_t [CFG.WAY_COUNT-1:0] sram_cfg_out_data_o,
+  output sram_cfg_out_tag_t  [CFG.WAY_COUNT-1:0] sram_cfg_out_tag_o,
 
   output axi_req_t axi_req_o,
   input  axi_rsp_t axi_rsp_i
