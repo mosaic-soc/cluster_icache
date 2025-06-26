@@ -8,79 +8,84 @@
 // Inherit from the random AXI master, but modify the request to emulate a core requesting intstructions.
 class semirand_axi_master #(
   // AXI interface parameters
-  parameter int   AW = 32,
-  parameter int   DW = 32,
-  parameter int   IW = 8,
-  parameter int   UW = 1,
+  parameter int AW = 32,
+  parameter int DW = 32,
+  parameter int IW = 8,
+  parameter int UW = 1,
   // Stimuli application and test time
-  parameter time  TA = 0ps,
-  parameter time  TT = 0ps,
+  parameter time TA = 0ps,
+  parameter time TT = 0ps,
   // Maximum number of read and write transactions in flight
-  parameter int   MAX_READ_TXNS = 1,
-  parameter int   MAX_WRITE_TXNS = 1,
+  parameter int MAX_READ_TXNS = 1,
+  parameter int MAX_WRITE_TXNS = 1,
   // Upper and lower bounds on wait cycles on Ax, W, and resp (R and B) channels
-  parameter int   AX_MIN_WAIT_CYCLES = 0,
-  parameter int   AX_MAX_WAIT_CYCLES = 100,
-  parameter int   W_MIN_WAIT_CYCLES = 0,
-  parameter int   W_MAX_WAIT_CYCLES = 5,
-  parameter int   RESP_MIN_WAIT_CYCLES = 0,
-  parameter int   RESP_MAX_WAIT_CYCLES = 20,
+  parameter int AX_MIN_WAIT_CYCLES = 0,
+  parameter int AX_MAX_WAIT_CYCLES = 100,
+  parameter int W_MIN_WAIT_CYCLES = 0,
+  parameter int W_MAX_WAIT_CYCLES = 5,
+  parameter int RESP_MIN_WAIT_CYCLES = 0,
+  parameter int RESP_MAX_WAIT_CYCLES = 20,
   // AXI feature usage
-  parameter int   AXI_MAX_BURST_LEN = 0, // maximum number of beats in burst; 0 = AXI max (256)
-  parameter int   TRAFFIC_SHAPING   = 0,
-  parameter int   AXI_ADDR_INCR     = 1,
-  parameter bit   AXI_EXCLS         = 1'b0,
-  parameter bit   AXI_ATOPS         = 1'b0,
-  parameter bit   AXI_BURST_FIXED   = 1'b1,
-  parameter bit   AXI_BURST_INCR    = 1'b1,
-  parameter bit   AXI_BURST_WRAP    = 1'b0,
+  parameter int AXI_MAX_BURST_LEN = 0,  // maximum number of beats in burst; 0 = AXI max (256)
+  parameter int TRAFFIC_SHAPING = 0,
+  parameter int AXI_ADDR_INCR = 1,
+  parameter bit AXI_EXCLS = 1'b0,
+  parameter bit AXI_ATOPS = 1'b0,
+  parameter bit AXI_BURST_FIXED = 1'b1,
+  parameter bit AXI_BURST_INCR = 1'b1,
+  parameter bit AXI_BURST_WRAP = 1'b0,
   // Dependent parameters, do not override.
-  parameter int   AXI_STRB_WIDTH = DW/8,
-  parameter int   N_AXI_IDS = 2**IW
+  parameter int AXI_STRB_WIDTH = DW / 8,
+  parameter int N_AXI_IDS = 2 ** IW
 ) extends axi_test::axi_rand_master #(
-  .AW                   ( AW                   ),
-  .DW                   ( DW                   ),
-  .IW                   ( IW                   ),
-  .UW                   ( UW                   ),
-  .TA                   ( TA                   ),
-  .TT                   ( TT                   ),
-  .MAX_READ_TXNS        ( MAX_READ_TXNS        ),
-  .MAX_WRITE_TXNS       ( MAX_WRITE_TXNS       ),
-  .AX_MIN_WAIT_CYCLES   ( AX_MIN_WAIT_CYCLES   ),
-  .AX_MAX_WAIT_CYCLES   ( AX_MAX_WAIT_CYCLES   ),
-  .W_MIN_WAIT_CYCLES    ( W_MIN_WAIT_CYCLES    ),
-  .W_MAX_WAIT_CYCLES    ( W_MAX_WAIT_CYCLES    ),
-  .RESP_MIN_WAIT_CYCLES ( RESP_MIN_WAIT_CYCLES ),
-  .RESP_MAX_WAIT_CYCLES ( RESP_MAX_WAIT_CYCLES ),
-  .AXI_MAX_BURST_LEN    ( AXI_MAX_BURST_LEN    ),
-  .TRAFFIC_SHAPING      ( TRAFFIC_SHAPING      ),
-  .AXI_EXCLS            ( AXI_EXCLS            ),
-  .AXI_ATOPS            ( AXI_ATOPS            ),
-  .AXI_BURST_FIXED      ( AXI_BURST_FIXED      ),
-  .AXI_BURST_INCR       ( AXI_BURST_INCR       ),
-  .AXI_BURST_WRAP       ( AXI_BURST_WRAP       )
+  .AW                  (AW),
+  .DW                  (DW),
+  .IW                  (IW),
+  .UW                  (UW),
+  .TA                  (TA),
+  .TT                  (TT),
+  .MAX_READ_TXNS       (MAX_READ_TXNS),
+  .MAX_WRITE_TXNS      (MAX_WRITE_TXNS),
+  .AX_MIN_WAIT_CYCLES  (AX_MIN_WAIT_CYCLES),
+  .AX_MAX_WAIT_CYCLES  (AX_MAX_WAIT_CYCLES),
+  .W_MIN_WAIT_CYCLES   (W_MIN_WAIT_CYCLES),
+  .W_MAX_WAIT_CYCLES   (W_MAX_WAIT_CYCLES),
+  .RESP_MIN_WAIT_CYCLES(RESP_MIN_WAIT_CYCLES),
+  .RESP_MAX_WAIT_CYCLES(RESP_MAX_WAIT_CYCLES),
+  .AXI_MAX_BURST_LEN   (AXI_MAX_BURST_LEN),
+  .TRAFFIC_SHAPING     (TRAFFIC_SHAPING),
+  .AXI_EXCLS           (AXI_EXCLS),
+  .AXI_ATOPS           (AXI_ATOPS),
+  .AXI_BURST_FIXED     (AXI_BURST_FIXED),
+  .AXI_BURST_INCR      (AXI_BURST_INCR),
+  .AXI_BURST_WRAP      (AXI_BURST_WRAP)
 );
 
-  function new(
-    virtual AXI_BUS_DV #(
-      .AXI_ADDR_WIDTH(AW),
-      .AXI_DATA_WIDTH(DW),
-      .AXI_ID_WIDTH(IW),
-      .AXI_USER_WIDTH(UW)
-    ) axi
-  );
+  function new(virtual AXI_BUS_DV #(
+               .AXI_ADDR_WIDTH(AW),
+               .AXI_DATA_WIDTH(DW),
+               .AXI_ID_WIDTH  (IW),
+               .AXI_USER_WIDTH(UW)
+               ) axi);
     super.new(axi);
   endfunction
 
   task send_ars(input int n_reads);
-    automatic logic rand_success;
+    automatic logic     rand_success;
     automatic ax_beat_t ar_beat = new_rand_burst(1'b1, '0);
     repeat (n_reads) begin
-      automatic id_t id;
+      automatic id_t  id;
       automatic logic jump;
       // Increment address per default, randomize sporadically
-      rand_success = std::randomize(jump) with {jump dist {1'b0 := 90, 1'b1 := 10};};
-      assert(rand_success);
+      rand_success = std::randomize(
+          jump
+      ) with {
+        jump dist {
+          1'b0 := 90,
+          1'b1 := 10
+        };
+      };
+      assert (rand_success);
       if (jump) begin
         ar_beat = new_rand_burst(1'b1, '0);
       end else begin
@@ -96,7 +101,8 @@ class semirand_axi_master #(
         // The ID must not be the same as that of any in-flight ATOP.
         forever begin
           cnt_sem.get();
-          rand_success = std::randomize(id); assert(rand_success);
+          rand_success = std::randomize(id);
+          assert (rand_success);
           if (!atop_resp_b[id] && !atop_resp_r[id]) begin
             break;
           end else begin
@@ -120,8 +126,7 @@ class semirand_axi_master #(
 
   // Issue n_reads random read and n_writes random write transactions to an address range.
   task run(input int n_reads, input int n_writes);
-    automatic logic  ar_done = 1'b0,
-                     aw_done = 1'b0;
+    automatic logic ar_done = 1'b0, aw_done = 1'b0;
     fork
       begin
         send_ars(n_reads);
@@ -144,63 +149,60 @@ endclass
 // --> Emulate a random ROM
 class const_axi_slave #(
   // AXI interface parameters
-  parameter int   AW = 32,
-  parameter int   DW = 32,
-  parameter int   IW = 8,
-  parameter int   UW = 1,
+  parameter int  AW                   = 32,
+  parameter int  DW                   = 32,
+  parameter int  IW                   = 8,
+  parameter int  UW                   = 1,
   // Stimuli application and test time
-  parameter time  TA = 0ps,
-  parameter time  TT = 0ps,
-  parameter bit   RAND_RESP = 0,
+  parameter time TA                   = 0ps,
+  parameter time TT                   = 0ps,
+  parameter bit  RAND_RESP            = 0,
   // Upper and lower bounds on wait cycles on Ax, W, and resp (R and B) channels
-  parameter int   AX_MIN_WAIT_CYCLES = 0,
-  parameter int   AX_MAX_WAIT_CYCLES = 100,
-  parameter int   R_MIN_WAIT_CYCLES = 0,
-  parameter int   R_MAX_WAIT_CYCLES = 5,
-  parameter int   RESP_MIN_WAIT_CYCLES = 0,
-  parameter int   RESP_MAX_WAIT_CYCLES = 20
+  parameter int  AX_MIN_WAIT_CYCLES   = 0,
+  parameter int  AX_MAX_WAIT_CYCLES   = 100,
+  parameter int  R_MIN_WAIT_CYCLES    = 0,
+  parameter int  R_MAX_WAIT_CYCLES    = 5,
+  parameter int  RESP_MIN_WAIT_CYCLES = 0,
+  parameter int  RESP_MAX_WAIT_CYCLES = 20
 ) extends axi_test::axi_rand_slave #(
-  .AW                   ( AW                   ),
-  .DW                   ( DW                   ),
-  .IW                   ( IW                   ),
-  .UW                   ( UW                   ),
-  .TA                   ( TA                   ),
-  .TT                   ( TT                   ),
-  .RAND_RESP            ( RAND_RESP            ),
-  .AX_MIN_WAIT_CYCLES   ( AX_MIN_WAIT_CYCLES   ),
-  .AX_MAX_WAIT_CYCLES   ( AX_MAX_WAIT_CYCLES   ),
-  .R_MIN_WAIT_CYCLES    ( R_MIN_WAIT_CYCLES    ),
-  .R_MAX_WAIT_CYCLES    ( R_MAX_WAIT_CYCLES    ),
-  .RESP_MIN_WAIT_CYCLES ( RESP_MIN_WAIT_CYCLES ),
-  .RESP_MAX_WAIT_CYCLES ( RESP_MAX_WAIT_CYCLES )
+  .AW                  (AW),
+  .DW                  (DW),
+  .IW                  (IW),
+  .UW                  (UW),
+  .TA                  (TA),
+  .TT                  (TT),
+  .RAND_RESP           (RAND_RESP),
+  .AX_MIN_WAIT_CYCLES  (AX_MIN_WAIT_CYCLES),
+  .AX_MAX_WAIT_CYCLES  (AX_MAX_WAIT_CYCLES),
+  .R_MIN_WAIT_CYCLES   (R_MIN_WAIT_CYCLES),
+  .R_MAX_WAIT_CYCLES   (R_MAX_WAIT_CYCLES),
+  .RESP_MIN_WAIT_CYCLES(RESP_MIN_WAIT_CYCLES),
+  .RESP_MAX_WAIT_CYCLES(RESP_MAX_WAIT_CYCLES)
 );
-  function new(
-    virtual AXI_BUS_DV #(
-      .AXI_ADDR_WIDTH(AW),
-      .AXI_DATA_WIDTH(DW),
-      .AXI_ID_WIDTH(IW),
-      .AXI_USER_WIDTH(UW)
-    ) axi
-  );
+  function new(virtual AXI_BUS_DV #(
+               .AXI_ADDR_WIDTH(AW),
+               .AXI_DATA_WIDTH(DW),
+               .AXI_ID_WIDTH  (IW),
+               .AXI_USER_WIDTH(UW)
+               ) axi);
     super.new(axi);
   endfunction
 
   task send_rs();
     forever begin
-      automatic logic rand_success;
+      automatic logic     rand_success;
       automatic ax_beat_t ar_beat;
-      automatic r_beat_t r_beat = new;
-      wait (!ar_queue.empty());
-      ar_beat = ar_queue.peek();
-      rand_success = std::randomize(r_beat); assert(rand_success);
-      for (int i = 0; i < (DW/32); i++) begin
-        r_beat.r_data[i*32 +: 32] = (ar_beat.ax_addr >> $clog2(DW/8) << $clog2(DW/8)) + (4*i);
+      automatic r_beat_t  r_beat = new;
+      wait (ar_queue.size > 0);
+      ar_beat      = ar_queue.peek();
+      rand_success = std::randomize(r_beat);
+      assert (rand_success);
+      for (int i = 0; i < (DW / 32); i++) begin
+        r_beat.r_data[i*32+:32] = (ar_beat.ax_addr >> $clog2(DW / 8) << $clog2(DW / 8)) + (4 * i);
       end
       r_beat.r_id = ar_beat.ax_id;
-      if (RAND_RESP && !ar_beat.ax_atop[5])
-        r_beat.r_resp[1] = $urandom();
-      if (ar_beat.ax_lock)
-        r_beat.r_resp[0]= $urandom();
+      if (RAND_RESP && !ar_beat.ax_atop[5]) r_beat.r_resp[1] = $urandom();
+      if (ar_beat.ax_lock) r_beat.r_resp[0] = $urandom();
       rand_wait(R_MIN_WAIT_CYCLES, R_MAX_WAIT_CYCLES);
       if (ar_beat.ax_len == '0) begin
         r_beat.r_last = 1'b1;
@@ -229,12 +231,12 @@ endclass
 `include "common_cells/assertions.svh"
 
 module snitch_read_only_cache_tb #(
-    parameter int unsigned AxiAddrWidth = 32,
-    parameter int unsigned AxiDataWidth = 128,
-    parameter int unsigned AxiIdWidth   = 5,
-    parameter int unsigned LineWidth    = 256,
-    parameter int unsigned LineCount    = 128,
-    parameter int unsigned WayCount     = 2
+  parameter int unsigned AxiAddrWidth = 32,
+  parameter int unsigned AxiDataWidth = 128,
+  parameter int unsigned AxiIdWidth   = 5,
+  parameter int unsigned LineWidth    = 256,
+  parameter int unsigned LineCount    = 128,
+  parameter int unsigned WayCount     = 2
 );
 
   localparam time ClkPeriod = 10ns;
@@ -246,97 +248,97 @@ module snitch_read_only_cache_tb #(
   `include "axi/typedef.svh"
   `include "axi/assign.svh"
 
-  localparam int unsigned AxiStrbWidth  = AxiDataWidth/8;
-  localparam int unsigned AxiInIdWidth  = AxiIdWidth;
-  localparam int unsigned AxiOutIdWidth = AxiInIdWidth+1;
-  localparam int unsigned AxiUserWidth  = 1;
+  localparam int unsigned AxiStrbWidth = AxiDataWidth / 8;
+  localparam int unsigned AxiInIdWidth = AxiIdWidth;
+  localparam int unsigned AxiOutIdWidth = AxiInIdWidth + 1;
+  localparam int unsigned AxiUserWidth = 1;
 
-  typedef logic [AxiAddrWidth-1:0]  axi_addr_t;
-  typedef logic [AxiDataWidth-1:0]  axi_data_t;
-  typedef logic [AxiStrbWidth-1:0]  axi_strb_t;
-  typedef logic [AxiInIdWidth-1:0]  axi_in_id_t;
+  typedef logic [AxiAddrWidth-1:0] axi_addr_t;
+  typedef logic [AxiDataWidth-1:0] axi_data_t;
+  typedef logic [AxiStrbWidth-1:0] axi_strb_t;
+  typedef logic [AxiInIdWidth-1:0] axi_in_id_t;
   typedef logic [AxiOutIdWidth-1:0] axi_out_id_t;
-  typedef logic [AxiUserWidth-1:0]  axi_user_t;
+  typedef logic [AxiUserWidth-1:0] axi_user_t;
 
   `AXI_TYPEDEF_ALL(axi_mst, axi_addr_t, axi_in_id_t, axi_data_t, axi_strb_t, axi_user_t)
   `AXI_TYPEDEF_ALL(axi_slv, axi_addr_t, axi_out_id_t, axi_data_t, axi_strb_t, axi_user_t)
 
   // Address regions
   localparam axi_addr_t CachedRegionStart = axi_addr_t'(32'h8000_0000);
-  localparam axi_addr_t CachedRegionEnd   = axi_addr_t'(32'h8000_1000);
+  localparam axi_addr_t CachedRegionEnd = axi_addr_t'(32'h8000_1000);
 
   // backing memory
-  logic [LineWidth-1:0] memory [logic [AxiAddrWidth-1:0]];
+  logic [LineWidth-1:0] memory[logic [AxiAddrWidth-1:0]];
 
-  logic  clk, rst;
+  logic clk, rst;
 
-  typedef semirand_axi_master #(
-    .AW                   ( AxiAddrWidth ),
-    .DW                   ( AxiDataWidth ),
-    .IW                   ( AxiInIdWidth ),
-    .UW                   ( AxiUserWidth ),
-    .TA                   ( TA           ),
-    .TT                   ( TT           ),
-    .MAX_READ_TXNS        ( 16           ),
-    .MAX_WRITE_TXNS       ( 4            ),
-    .AX_MIN_WAIT_CYCLES   ( 0            ),
-    .AX_MAX_WAIT_CYCLES   ( 8            ),
-    .W_MIN_WAIT_CYCLES    ( 0            ),
-    .W_MAX_WAIT_CYCLES    ( 8            ),
-    .RESP_MIN_WAIT_CYCLES ( 0            ),
-    .RESP_MAX_WAIT_CYCLES ( 8            ),
-    .AXI_MAX_BURST_LEN    ( 16           ),
-    .TRAFFIC_SHAPING      ( 0            ),
-    .AXI_ADDR_INCR        ( LineWidth/8  ),
-    .AXI_EXCLS            ( 1'b1         ),
-    .AXI_ATOPS            ( 1'b1         ),
-    .AXI_BURST_FIXED      ( 1'b0         ),
-    .AXI_BURST_INCR       ( 1'b1         ),
-    .AXI_BURST_WRAP       ( 1'b0         )
+  typedef semirand_axi_master#(
+    .AW                  (AxiAddrWidth),
+    .DW                  (AxiDataWidth),
+    .IW                  (AxiInIdWidth),
+    .UW                  (AxiUserWidth),
+    .TA                  (TA),
+    .TT                  (TT),
+    .MAX_READ_TXNS       (16),
+    .MAX_WRITE_TXNS      (4),
+    .AX_MIN_WAIT_CYCLES  (0),
+    .AX_MAX_WAIT_CYCLES  (8),
+    .W_MIN_WAIT_CYCLES   (0),
+    .W_MAX_WAIT_CYCLES   (8),
+    .RESP_MIN_WAIT_CYCLES(0),
+    .RESP_MAX_WAIT_CYCLES(8),
+    .AXI_MAX_BURST_LEN   (16),
+    .TRAFFIC_SHAPING     (0),
+    .AXI_ADDR_INCR       (LineWidth / 8),
+    .AXI_EXCLS           (1'b1),
+    .AXI_ATOPS           (1'b1),
+    .AXI_BURST_FIXED     (1'b0),
+    .AXI_BURST_INCR      (1'b1),
+    .AXI_BURST_WRAP      (1'b0)
   ) axi_rand_master_t;
 
-  typedef const_axi_slave #(
-    .AW                   ( AxiAddrWidth  ),
-    .DW                   ( AxiDataWidth  ),
-    .IW                   ( AxiOutIdWidth ),
-    .UW                   ( AxiUserWidth  ),
-    .TA                   ( TA            ),
-    .TT                   ( TT            ),
-    .RAND_RESP            ( 0             ),
-    .AX_MIN_WAIT_CYCLES   ( 0             ),
-    .AX_MAX_WAIT_CYCLES   ( 8             ),
-    .R_MIN_WAIT_CYCLES    ( 0             ),
-    .R_MAX_WAIT_CYCLES    ( 8             ),
-    .RESP_MIN_WAIT_CYCLES ( 0             ),
-    .RESP_MAX_WAIT_CYCLES ( 8             )
+  typedef const_axi_slave#(
+    .AW                  (AxiAddrWidth),
+    .DW                  (AxiDataWidth),
+    .IW                  (AxiOutIdWidth),
+    .UW                  (AxiUserWidth),
+    .TA                  (TA),
+    .TT                  (TT),
+    .RAND_RESP           (0),
+    .AX_MIN_WAIT_CYCLES  (0),
+    .AX_MAX_WAIT_CYCLES  (8),
+    .R_MIN_WAIT_CYCLES   (0),
+    .R_MAX_WAIT_CYCLES   (8),
+    .RESP_MIN_WAIT_CYCLES(0),
+    .RESP_MAX_WAIT_CYCLES(8)
   ) axi_rand_slave_t;
 
   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth ),
-    .AXI_DATA_WIDTH ( AxiDataWidth ),
-    .AXI_ID_WIDTH   ( AxiInIdWidth ),
-    .AXI_USER_WIDTH ( AxiUserWidth )
+    .AXI_ADDR_WIDTH(AxiAddrWidth),
+    .AXI_DATA_WIDTH(AxiDataWidth),
+    .AXI_ID_WIDTH  (AxiInIdWidth),
+    .AXI_USER_WIDTH(AxiUserWidth)
   ) axi_mst_dv (
-    .clk_i ( clk )
+    .clk_i(clk)
   );
 
   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
-    .AXI_USER_WIDTH ( AxiUserWidth  )
+    .AXI_ADDR_WIDTH(AxiAddrWidth),
+    .AXI_DATA_WIDTH(AxiDataWidth),
+    .AXI_ID_WIDTH  (AxiOutIdWidth),
+    .AXI_USER_WIDTH(AxiUserWidth)
   ) axi_slv_dv (
-    .clk_i ( clk )
+    .clk_i(clk)
   );
 
   axi_rand_master_t mst_intf = new(axi_mst_dv);
-  axi_rand_slave_t slv_intf = new(axi_slv_dv);
+  axi_rand_slave_t  slv_intf = new(axi_slv_dv);
 
-  axi_mst_req_t  axi_mst_req;
-  axi_mst_resp_t axi_mst_resp;
+  axi_mst_req_t     axi_mst_req;
+  axi_mst_resp_t    axi_mst_resp;
 
-  axi_slv_req_t  axi_slv_req;
-  axi_slv_resp_t axi_slv_resp;
+  axi_slv_req_t     axi_slv_req;
+  axi_slv_resp_t    axi_slv_resp;
 
   `AXI_ASSIGN_TO_REQ(axi_mst_req, axi_mst_dv)
   `AXI_ASSIGN_FROM_RESP(axi_mst_dv, axi_mst_resp)
@@ -345,34 +347,36 @@ module snitch_read_only_cache_tb #(
   `AXI_ASSIGN_TO_RESP(axi_slv_resp, axi_slv_dv)
 
   snitch_read_only_cache #(
-    .LineWidth    ( LineWidth      ),
-    .LineCount    ( LineCount      ),
-    .WayCount     ( WayCount       ),
-    .AxiAddrWidth ( AxiAddrWidth   ),
-    .AxiDataWidth ( AxiDataWidth   ),
-    .AxiIdWidth   ( AxiInIdWidth   ),
-    .AxiUserWidth ( 1              ),
-    .MaxTrans     ( 32'd8          ),
-    .NrAddrRules  ( 1              ),
-    .slv_req_t    ( axi_mst_req_t  ),
-    .slv_rsp_t    ( axi_mst_resp_t ),
-    .mst_req_t    ( axi_slv_req_t  ),
-    .mst_rsp_t    ( axi_slv_resp_t )
+    .LineWidth   (LineWidth),
+    .LineCount   (LineCount),
+    .WayCount    (WayCount),
+    .AxiAddrWidth(AxiAddrWidth),
+    .AxiDataWidth(AxiDataWidth),
+    .AxiIdWidth  (AxiInIdWidth),
+    .AxiUserWidth(1),
+    .MaxTrans    (32'd8),
+    .NrAddrRules (1),
+    .slv_req_t   (axi_mst_req_t),
+    .slv_rsp_t   (axi_mst_resp_t),
+    .mst_req_t   (axi_slv_req_t),
+    .mst_rsp_t   (axi_slv_resp_t)
   ) dut (
-    .clk_i         ( clk                 ),
-    .rst_ni        ( ~rst                ),
-    .enable_i      ( 1'b1                ),
-    .flush_valid_i ( 1'b0                ),
-    .flush_ready_o ( /*unused*/          ),
-    .icache_events_o (  ),
-    .start_addr_i  ( {CachedRegionStart} ),
-    .end_addr_i    ( {CachedRegionEnd}   ),
-    .axi_slv_req_i ( axi_mst_req         ),
-    .axi_slv_rsp_o ( axi_mst_resp        ),
-    .axi_mst_req_o ( axi_slv_req         ),
-    .axi_mst_rsp_i ( axi_slv_resp        ),
+    .clk_i          (clk),
+    .rst_ni         (~rst),
+    .enable_i       (1'b1),
+    .flush_valid_i  (1'b0),
+    .flush_ready_o  (  /*unused*/),
+    .icache_events_o(),
+    .start_addr_i   ({CachedRegionStart}),
+    .end_addr_i     ({CachedRegionEnd}),
+    .axi_slv_req_i  (axi_mst_req),
+    .axi_slv_rsp_o  (axi_mst_resp),
+    .axi_mst_req_o  (axi_slv_req),
+    .axi_mst_rsp_i  (axi_slv_resp),
     .sram_cfg_data_i('0),
-    .sram_cfg_tag_i ('0)
+    .sram_cfg_tag_i ('0),
+    .sram_cfg_out_data_o(),
+    .sram_cfg_out_tag_o()
   );
 
   task static cycle_start;
@@ -383,17 +387,22 @@ module snitch_read_only_cache_tb #(
     @(posedge clk);
   endtask
 
-  typedef axi_test::axi_driver #(
-    .AW(AxiAddrWidth), .DW(AxiDataWidth), .IW(AxiInIdWidth), .UW(AxiUserWidth), .TA(TA), .TT(TT)
+  typedef axi_test::axi_driver#(
+    .AW(AxiAddrWidth),
+    .DW(AxiDataWidth),
+    .IW(AxiInIdWidth),
+    .UW(AxiUserWidth),
+    .TA(TA),
+    .TT(TT)
   ) axi_driver_t;
 
   typedef axi_driver_t::ax_beat_t ar_beat_t;
-  typedef axi_driver_t::r_beat_t  r_beat_t;
+  typedef axi_driver_t::r_beat_t r_beat_t;
 
   initial begin
-    automatic logic rand_success;
+    automatic logic     rand_success;
     automatic ar_beat_t ar_beat = new;
-    automatic r_beat_t r_beat = new;
+    automatic r_beat_t  r_beat = new;
 
     // Initialize memory region of random axi master to only fetch from two lines
     mst_intf.add_memory_region(CachedRegionStart, CachedRegionEnd, axi_pkg::WTHRU_RALLOCATE);
@@ -431,10 +440,10 @@ module snitch_read_only_cache_tb #(
     // Issue two requests to the same location simultaneously
     fork
       begin
-        ar_beat.ax_addr   = CachedRegionStart+'h100;
-        ar_beat.ax_len    = 0;
+        ar_beat.ax_addr = CachedRegionStart + 'h100;
+        ar_beat.ax_len  = 0;
         mst_intf.drv.send_ar(ar_beat);
-        ar_beat.ax_id     = '0;
+        ar_beat.ax_id = '0;
         mst_intf.drv.send_ar(ar_beat);
       end
       begin
@@ -452,11 +461,11 @@ module snitch_read_only_cache_tb #(
     // to test reordering or transactions
     fork
       begin
-        ar_beat.ax_addr   = CachedRegionStart+'h200;
-        ar_beat.ax_len    = 1;
+        ar_beat.ax_addr = CachedRegionStart + 'h200;
+        ar_beat.ax_len  = 1;
         mst_intf.drv.send_ar(ar_beat);
-        ar_beat.ax_len    = 0;
-        ar_beat.ax_addr   = CachedRegionEnd+'h200;
+        ar_beat.ax_len  = 0;
+        ar_beat.ax_addr = CachedRegionEnd + 'h200;
         mst_intf.drv.send_ar(ar_beat);
       end
       begin
@@ -473,7 +482,7 @@ module snitch_read_only_cache_tb #(
     // Issue random request to the cached region
     mst_intf.run(10000, 0);
     mst_intf.add_memory_region(CachedRegionStart,
-                               CachedRegionStart+2*(CachedRegionEnd-CachedRegionStart),
+                               CachedRegionStart + 2 * (CachedRegionEnd - CachedRegionStart),
                                axi_pkg::WTHRU_RALLOCATE);
 
     #1000ns;
@@ -512,33 +521,34 @@ module snitch_read_only_cache_tb #(
   ////////////////////////
 
   // Queues
-  localparam int unsigned NoIds = 2**AxiInIdWidth;
+  localparam int unsigned NoIds = 2 ** AxiInIdWidth;
   axi_mst_ar_chan_t ar_queues[NoIds][$];
-  axi_mst_r_chan_t  r_queues[NoIds][$];
+  axi_mst_r_chan_t  r_queues [NoIds][$];
 
   // channel sampling into queues
-  always @(posedge clk) #TT begin : proc_channel_sample
-    automatic axi_mst_ar_chan_t ar_beat;
-    // only execute when reset is high
-    if (!rst) begin
-      // AR channel
-      if (axi_mst_req.ar_valid && axi_mst_resp.ar_ready) begin
-        ar_queues[axi_mst_req.ar.id].push_back(axi_mst_req.ar);
-      end
-      // R channel
-      if (axi_mst_resp.r_valid && axi_mst_req.r_ready) begin
-        r_queues[axi_mst_resp.r.id].push_back(axi_mst_resp.r);
+  always @(posedge clk)
+    #TT begin : proc_channel_sample
+      automatic axi_mst_ar_chan_t ar_beat;
+      // only execute when reset is high
+      if (!rst) begin
+        // AR channel
+        if (axi_mst_req.ar_valid && axi_mst_resp.ar_ready) begin
+          ar_queues[axi_mst_req.ar.id].push_back(axi_mst_req.ar);
+        end
+        // R channel
+        if (axi_mst_resp.r_valid && axi_mst_req.r_ready) begin
+          r_queues[axi_mst_resp.r.id].push_back(axi_mst_resp.r);
+        end
       end
     end
-  end
 
   initial begin
-    automatic axi_mst_ar_chan_t  ar_beat;
-    automatic axi_mst_r_chan_t   r_beat;
-    automatic axi_addr_t         addr;
-    automatic axi_addr_t         aligned_addr;
-    automatic axi_data_t         exp_data;
-    automatic int unsigned       no_r_beat[NoIds];
+    automatic axi_mst_ar_chan_t ar_beat;
+    automatic axi_mst_r_chan_t  r_beat;
+    automatic axi_addr_t        addr;
+    automatic axi_addr_t        aligned_addr;
+    automatic axi_data_t        exp_data;
+    automatic int unsigned      no_r_beat    [NoIds];
     $timeformat(-9, 2, " ns", 20);
     @(negedge rst);
     forever begin
@@ -548,14 +558,14 @@ module snitch_read_only_cache_tb #(
       for (int unsigned i = 0; i < NoIds; i++) begin
         while (ar_queues[i].size() != 0 && r_queues[i].size() != 0) begin
           ar_beat = ar_queues[i][0];
-          addr = ar_beat.addr;
+          addr    = ar_beat.addr;
           for (int unsigned j = 0; j <= ar_beat.len; j++) begin
             wait (r_queues[i].size() > 0);
-            r_beat  = r_queues[i].pop_front();
+            r_beat       = r_queues[i].pop_front();
             // Check data
-            aligned_addr = addr >> $clog2(AxiDataWidth/8) << $clog2(AxiDataWidth/8);
-            for (int i = 0; i < (AxiDataWidth/32); i++) begin
-              exp_data[i*32 +: 32] = aligned_addr + (4*i);
+            aligned_addr = addr >> $clog2(AxiDataWidth / 8) << $clog2(AxiDataWidth / 8);
+            for (int i = 0; i < (AxiDataWidth / 32); i++) begin
+              exp_data[i*32+:32] = aligned_addr + (4 * i);
             end
             if (r_beat.data != exp_data) begin
               $display("Error (%0t): Wrong data. Addr=0x%x, Beat=%d, Size=%d Aqc=0x%x Exp=0x%x",
@@ -568,7 +578,7 @@ module snitch_read_only_cache_tb #(
             no_r_beat[i]++;
             // pop the queue if it is the last flag
             if (r_beat.last) begin
-              ar_beat = ar_queues[i].pop_front();
+              ar_beat      = ar_queues[i].pop_front();
               no_r_beat[i] = 0;
             end else begin
               addr = addr + (1 << ar_beat.size);
@@ -582,63 +592,63 @@ module snitch_read_only_cache_tb #(
   ////////////////////////
   // Debug              //
   ////////////////////////
-  if (DEBUG) begin: gen_chan_logger
+  if (DEBUG) begin : gen_chan_logger
     axi_chan_logger #(
-      .TestTime   ( 8ns                   ),
-      .LoggerName ( "mst_logger"          ),
-      .aw_chan_t  ( axi_mst_aw_chan_t     ),
-      .w_chan_t   ( axi_mst_w_chan_t      ),
-      .b_chan_t   ( axi_mst_b_chan_t      ),
-      .ar_chan_t  ( axi_mst_ar_chan_t     ),
-      .r_chan_t   ( axi_mst_r_chan_t      )
+      .TestTime  (8ns),
+      .LoggerName("mst_logger"),
+      .aw_chan_t (axi_mst_aw_chan_t),
+      .w_chan_t  (axi_mst_w_chan_t),
+      .b_chan_t  (axi_mst_b_chan_t),
+      .ar_chan_t (axi_mst_ar_chan_t),
+      .r_chan_t  (axi_mst_r_chan_t)
     ) i_axi_chan_logger_mst (
-      .clk_i      ( clk                   ),
-      .rst_ni     ( ~rst                  ),
-      .end_sim_i  ( 1'b0                  ),
-      .aw_chan_i  ( axi_mst_req.aw        ),
-      .aw_valid_i ( axi_mst_req.aw_valid  ),
-      .aw_ready_i ( axi_mst_resp.aw_ready ),
-      .w_chan_i   ( axi_mst_req.w         ),
-      .w_valid_i  ( axi_mst_req.w_valid   ),
-      .w_ready_i  ( axi_mst_resp.w_ready  ),
-      .b_chan_i   ( axi_mst_resp.b        ),
-      .b_valid_i  ( axi_mst_resp.b_valid  ),
-      .b_ready_i  ( axi_mst_req.b_ready   ),
-      .ar_chan_i  ( axi_mst_req.ar        ),
-      .ar_valid_i ( axi_mst_req.ar_valid  ),
-      .ar_ready_i ( axi_mst_resp.ar_ready ),
-      .r_chan_i   ( axi_mst_resp.r        ),
-      .r_valid_i  ( axi_mst_resp.r_valid  ),
-      .r_ready_i  ( axi_mst_req.r_ready   )
+      .clk_i     (clk),
+      .rst_ni    (~rst),
+      .end_sim_i (1'b0),
+      .aw_chan_i (axi_mst_req.aw),
+      .aw_valid_i(axi_mst_req.aw_valid),
+      .aw_ready_i(axi_mst_resp.aw_ready),
+      .w_chan_i  (axi_mst_req.w),
+      .w_valid_i (axi_mst_req.w_valid),
+      .w_ready_i (axi_mst_resp.w_ready),
+      .b_chan_i  (axi_mst_resp.b),
+      .b_valid_i (axi_mst_resp.b_valid),
+      .b_ready_i (axi_mst_req.b_ready),
+      .ar_chan_i (axi_mst_req.ar),
+      .ar_valid_i(axi_mst_req.ar_valid),
+      .ar_ready_i(axi_mst_resp.ar_ready),
+      .r_chan_i  (axi_mst_resp.r),
+      .r_valid_i (axi_mst_resp.r_valid),
+      .r_ready_i (axi_mst_req.r_ready)
     );
 
     axi_chan_logger #(
-      .TestTime   ( 8ns                   ),
-      .LoggerName ( "slv_logger"          ),
-      .aw_chan_t  ( axi_slv_aw_chan_t     ),
-      .w_chan_t   ( axi_slv_w_chan_t      ),
-      .b_chan_t   ( axi_slv_b_chan_t      ),
-      .ar_chan_t  ( axi_slv_ar_chan_t     ),
-      .r_chan_t   ( axi_slv_r_chan_t      )
+      .TestTime  (8ns),
+      .LoggerName("slv_logger"),
+      .aw_chan_t (axi_slv_aw_chan_t),
+      .w_chan_t  (axi_slv_w_chan_t),
+      .b_chan_t  (axi_slv_b_chan_t),
+      .ar_chan_t (axi_slv_ar_chan_t),
+      .r_chan_t  (axi_slv_r_chan_t)
     ) i_axi_chan_logger_slv (
-      .clk_i      ( clk                   ),
-      .rst_ni     ( ~rst                  ),
-      .end_sim_i  ( 1'b0                  ),
-      .aw_chan_i  ( axi_slv_req.aw        ),
-      .aw_valid_i ( axi_slv_req.aw_valid  ),
-      .aw_ready_i ( axi_slv_resp.aw_ready ),
-      .w_chan_i   ( axi_slv_req.w         ),
-      .w_valid_i  ( axi_slv_req.w_valid   ),
-      .w_ready_i  ( axi_slv_resp.w_ready  ),
-      .b_chan_i   ( axi_slv_resp.b        ),
-      .b_valid_i  ( axi_slv_resp.b_valid  ),
-      .b_ready_i  ( axi_slv_req.b_ready   ),
-      .ar_chan_i  ( axi_slv_req.ar        ),
-      .ar_valid_i ( axi_slv_req.ar_valid  ),
-      .ar_ready_i ( axi_slv_resp.ar_ready ),
-      .r_chan_i   ( axi_slv_resp.r        ),
-      .r_valid_i  ( axi_slv_resp.r_valid  ),
-      .r_ready_i  ( axi_slv_req.r_ready   )
+      .clk_i     (clk),
+      .rst_ni    (~rst),
+      .end_sim_i (1'b0),
+      .aw_chan_i (axi_slv_req.aw),
+      .aw_valid_i(axi_slv_req.aw_valid),
+      .aw_ready_i(axi_slv_resp.aw_ready),
+      .w_chan_i  (axi_slv_req.w),
+      .w_valid_i (axi_slv_req.w_valid),
+      .w_ready_i (axi_slv_resp.w_ready),
+      .b_chan_i  (axi_slv_resp.b),
+      .b_valid_i (axi_slv_resp.b_valid),
+      .b_ready_i (axi_slv_req.b_ready),
+      .ar_chan_i (axi_slv_req.ar),
+      .ar_valid_i(axi_slv_req.ar_valid),
+      .ar_ready_i(axi_slv_resp.ar_ready),
+      .r_chan_i  (axi_slv_resp.r),
+      .r_valid_i (axi_slv_resp.r_valid),
+      .r_ready_i (axi_slv_req.r_ready)
     );
   end
 
@@ -646,13 +656,13 @@ module snitch_read_only_cache_tb #(
   initial begin
     rst = 1;
     repeat (3) begin
-      #(ClkPeriod/2) clk = 0;
-      #(ClkPeriod/2) clk = 1;
+      #(ClkPeriod / 2) clk = 0;
+      #(ClkPeriod / 2) clk = 1;
     end
     rst = 0;
     forever begin
-      #(ClkPeriod/2) clk = 0;
-      #(ClkPeriod/2) clk = 1;
+      #(ClkPeriod / 2) clk = 0;
+      #(ClkPeriod / 2) clk = 1;
     end
   end
 endmodule
