@@ -39,8 +39,9 @@ test_ro_nogui: build
 	$(VSIM) -c snitch_read_only_cache_tb -coverage -voptargs='+cover=sbecft' -do "run -all"
 
 # format all source files with verible-verilog-format
+.PHONY: format
 format:
-	$(BENDER) script -t test flist | grep -E "("`realpath ./src/`"|"`realpath ./test/`")" | xargs verible-verilog-format --flagfile .verilog_format --inplace
+	$(BENDER) script -t test flist -n | xargs verible-verilog-format --flagfile .verilog_format --inplace
 
 .PHONY: clean
 

@@ -374,7 +374,9 @@ module snitch_read_only_cache_tb #(
     .axi_mst_req_o  (axi_slv_req),
     .axi_mst_rsp_i  (axi_slv_resp),
     .sram_cfg_data_i('0),
-    .sram_cfg_tag_i ('0)
+    .sram_cfg_tag_i ('0),
+    .sram_cfg_out_data_o(),
+    .sram_cfg_out_tag_o()
   );
 
   task static cycle_start;

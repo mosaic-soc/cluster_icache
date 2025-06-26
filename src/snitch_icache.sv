@@ -60,7 +60,7 @@ module snitch_icache
   parameter  type         sram_cfg_out_data_t = logic,
   parameter  type         sram_cfg_out_tag_t  = logic,
   /// If serial lookup is used, only a single sram_cfg input/output will be used
-  localparam int unsigned NUM_SRAM_CFG        = SERIAL_LOOKUP ? 1 : WAY_COUNT,
+  localparam int unsigned NumSRAMCfg          = SERIAL_LOOKUP ? 1 : WAY_COUNT,
 
   parameter type axi_req_t = logic,
   parameter type axi_rsp_t = logic
@@ -84,10 +84,10 @@ module snitch_icache
   output logic                     [NR_FETCH_PORTS-1:0] inst_ready_o,
   output logic                     [NR_FETCH_PORTS-1:0] inst_error_o,
 
-  input  sram_cfg_data_t     [NUM_SRAM_CFG-1:0] sram_cfg_data_i,
-  input  sram_cfg_tag_t      [NUM_SRAM_CFG-1:0] sram_cfg_tag_i,
-  output sram_cfg_out_data_t [NUM_SRAM_CFG-1:0] sram_cfg_out_data_o,
-  output sram_cfg_out_tag_t  [NUM_SRAM_CFG-1:0] sram_cfg_out_tag_o,
+  input  sram_cfg_data_t     [NumSRAMCfg-1:0] sram_cfg_data_i,
+  input  sram_cfg_tag_t      [NumSRAMCfg-1:0] sram_cfg_tag_i,
+  output sram_cfg_out_data_t [NumSRAMCfg-1:0] sram_cfg_out_data_o,
+  output sram_cfg_out_tag_t  [NumSRAMCfg-1:0] sram_cfg_out_tag_o,
 
   output axi_req_t axi_req_o,
   input  axi_rsp_t axi_rsp_i
