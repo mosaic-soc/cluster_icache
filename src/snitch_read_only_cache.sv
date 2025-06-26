@@ -12,44 +12,50 @@ module snitch_read_only_cache
   import snitch_icache_pkg::*;
 #(
   /// Cache Line Width
-  parameter int unsigned LineWidth       = -1,
+  parameter  int unsigned LineWidth           = -1,
   /// The number of cache lines per way. Power of two; >= 2.
-  parameter int unsigned LineCount       = -1,
+  parameter  int unsigned LineCount           = -1,
   /// The set associativity of the cache. Power of two; >= 1.
-  parameter int unsigned WayCount        = 1,
+  parameter  int unsigned WayCount            = 1,
   /// AXI address width
-  parameter int unsigned AxiAddrWidth    = 0,
+  parameter  int unsigned AxiAddrWidth        = 0,
   /// AXI data width
-  parameter int unsigned AxiDataWidth    = 0,
+  parameter  int unsigned AxiDataWidth        = 0,
   /// AXI id width
-  parameter int unsigned AxiIdWidth      = 0,
+  parameter  int unsigned AxiIdWidth          = 0,
   /// AXI user width
-  parameter int unsigned AxiUserWidth    = 0,
-  parameter int unsigned MaxTrans        = 0,
-  parameter int unsigned NrAddrRules     = 1,
-  parameter bit          SerialLookup    = 1,
-  parameter type         slv_req_t       = logic,
-  parameter type         slv_rsp_t       = logic,
-  parameter type         mst_req_t       = logic,
-  parameter type         mst_rsp_t       = logic,
-  /// Configuration input types for memory cuts used in implementation.
-  parameter type         sram_cfg_data_t = logic,
-  parameter type         sram_cfg_tag_t  = logic
+  parameter  int unsigned AxiUserWidth        = 0,
+  parameter  int unsigned MaxTrans            = 0,
+  parameter  int unsigned NrAddrRules         = 1,
+  parameter  bit          SerialLookup        = 1,
+  parameter  type         slv_req_t           = logic,
+  parameter  type         slv_rsp_t           = logic,
+  parameter  type         mst_req_t           = logic,
+  parameter  type         mst_rsp_t           = logic,
+  /// Configuration input/output types for memory cuts used in implementation.
+  parameter  type         sram_cfg_data_t     = logic,
+  parameter  type         sram_cfg_tag_t      = logic,
+  parameter  type         sram_cfg_out_data_t = logic,
+  parameter  type         sram_cfg_out_tag_t  = logic,
+  /// If serial lookup is used, only a single sram_cfg input/output will be used
+  localparam int unsigned NumSRAMCfg          = SerialLookup ? 1 : WayCount
 ) (
-  input  logic                                                  clk_i,
-  input  logic                                                  rst_ni,
-  input  logic                                                  enable_i,
-  input  logic                                                  flush_valid_i,
-  output logic                                                  flush_ready_o,
-  output icache_l1_events_t                                     icache_events_o,
-  input  logic              [NrAddrRules-1:0][AxiAddrWidth-1:0] start_addr_i,
-  input  logic              [NrAddrRules-1:0][AxiAddrWidth-1:0] end_addr_i,
-  input  slv_req_t                                              axi_slv_req_i,
-  output slv_rsp_t                                              axi_slv_rsp_o,
-  output mst_req_t                                              axi_mst_req_o,
-  input  mst_rsp_t                                              axi_mst_rsp_i,
-  input  sram_cfg_data_t                                        sram_cfg_data_i,
-  input  sram_cfg_tag_t                                         sram_cfg_tag_i
+  input  logic                                                   clk_i,
+  input  logic                                                   rst_ni,
+  input  logic                                                   enable_i,
+  input  logic                                                   flush_valid_i,
+  output logic                                                   flush_ready_o,
+  output icache_l1_events_t                                      icache_events_o,
+  input  logic               [NrAddrRules-1:0][AxiAddrWidth-1:0] start_addr_i,
+  input  logic               [NrAddrRules-1:0][AxiAddrWidth-1:0] end_addr_i,
+  input  slv_req_t                                               axi_slv_req_i,
+  output slv_rsp_t                                               axi_slv_rsp_o,
+  output mst_req_t                                               axi_mst_req_o,
+  input  mst_rsp_t                                               axi_mst_rsp_i,
+  input  sram_cfg_data_t                      [  NumSRAMCfg-1:0] sram_cfg_data_i,
+  input  sram_cfg_tag_t                       [  NumSRAMCfg-1:0] sram_cfg_tag_i,
+  output sram_cfg_out_data_t                  [  NumSRAMCfg-1:0] sram_cfg_out_data_o,
+  output sram_cfg_out_tag_t                   [  NumSRAMCfg-1:0] sram_cfg_out_tag_o
 );
 
   `include "axi/typedef.svh"
@@ -281,9 +287,11 @@ module snitch_read_only_cache
   // The lookup module contains the actual cache RAMs and performs lookups.
   if (SerialLookup) begin : gen_serial_lookup
     snitch_icache_lookup_serial #(
-      .CFG            (CFG),
-      .sram_cfg_tag_t (sram_cfg_tag_t),
-      .sram_cfg_data_t(sram_cfg_data_t)
+      .CFG                (CFG),
+      .sram_cfg_tag_t     (sram_cfg_tag_t),
+      .sram_cfg_data_t    (sram_cfg_data_t),
+      .sram_cfg_out_tag_t (sram_cfg_out_tag_t),
+      .sram_cfg_out_data_t(sram_cfg_out_data_t)
     ) i_lookup (
       .clk_i,
       .rst_ni,
@@ -315,13 +323,17 @@ module snitch_read_only_cache
       .write_ready_o(write_ready),
 
       .sram_cfg_tag_i,
-      .sram_cfg_data_i
+      .sram_cfg_data_i,
+      .sram_cfg_out_data_o,
+      .sram_cfg_out_tag_o
     );
   end else begin : gen_parallel_lookup
     snitch_icache_lookup_parallel #(
-      .CFG            (CFG),
-      .sram_cfg_tag_t (sram_cfg_tag_t),
-      .sram_cfg_data_t(sram_cfg_data_t)
+      .CFG                (CFG),
+      .sram_cfg_tag_t     (sram_cfg_tag_t),
+      .sram_cfg_data_t    (sram_cfg_data_t),
+      .sram_cfg_out_tag_t (sram_cfg_out_tag_t),
+      .sram_cfg_out_data_t(sram_cfg_out_data_t)
     ) i_lookup (
       .clk_i,
       .rst_ni,
@@ -353,7 +365,9 @@ module snitch_read_only_cache
       .write_ready_o(write_ready),
 
       .sram_cfg_tag_i,
-      .sram_cfg_data_i
+      .sram_cfg_data_i,
+      .sram_cfg_out_data_o,
+      .sram_cfg_out_tag_o
     );
   end
 

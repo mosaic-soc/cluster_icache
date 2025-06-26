@@ -193,7 +193,7 @@ class const_axi_slave #(
       automatic logic     rand_success;
       automatic ax_beat_t ar_beat;
       automatic r_beat_t  r_beat = new;
-      wait (!ar_queue.empty());
+      wait (ar_queue.size > 0);
       ar_beat      = ar_queue.peek();
       rand_success = std::randomize(r_beat);
       assert (rand_success);

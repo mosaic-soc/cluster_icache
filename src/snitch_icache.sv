@@ -11,54 +11,56 @@ module snitch_icache
   import snitch_icache_pkg::*;
 #(
   /// Number of request (fetch) ports
-  parameter int unsigned NR_FETCH_PORTS      = -1,
+  parameter  int unsigned NR_FETCH_PORTS      = -1,
   /// L0 Cache Line Count (L0 is fully associative)
-  parameter int unsigned L0_LINE_COUNT       = -1,
+  parameter  int unsigned L0_LINE_COUNT       = -1,
   /// Cache Line Width
-  parameter int unsigned LINE_WIDTH          = -1,
+  parameter  int unsigned LINE_WIDTH          = -1,
   /// The number of cache lines per way. Power of two; >= 2.
-  parameter int unsigned LINE_COUNT          = -1,
+  parameter  int unsigned LINE_COUNT          = -1,
   /// The set associativity of the cache. Power of two; >= 1.
-  parameter int unsigned WAY_COUNT           = 1,
+  parameter  int unsigned WAY_COUNT           = 1,
   /// Fetch interface address width. Same as FILL_AW; >= 1.
-  parameter int unsigned FETCH_AW            = -1,
+  parameter  int unsigned FETCH_AW            = -1,
   /// Fetch interface data width. Power of two; >= 8.
-  parameter int unsigned FETCH_DW            = -1,
+  parameter  int unsigned FETCH_DW            = -1,
   /// Fill interface address width. Same as FETCH_AW; >= 1.
-  parameter int unsigned FILL_AW             = -1,
+  parameter  int unsigned FILL_AW             = -1,
   /// Fill interface data width. Power of two; >= 8.
-  parameter int unsigned FILL_DW             = -1,
+  parameter  int unsigned FILL_DW             = -1,
   /// Allow fetches to have priority over prefetches for L0 to L1
-  parameter bit          FETCH_PRIORITY      = 1'b0,
+  parameter  bit          FETCH_PRIORITY      = 1'b0,
   /// Merge L0-L1 fetches if requesting the same address
-  parameter bit          MERGE_FETCHES       = 1'b0,
+  parameter  bit          MERGE_FETCHES       = 1'b0,
   /// Serialize the L1 lookup (parallel tag/data lookup by default)
-  parameter bit          SERIAL_LOOKUP       = 0,
+  parameter  bit          SERIAL_LOOKUP       = 0,
   /// Replace the L1 tag banks with latch-based SCM.
-  parameter bit          L1_TAG_SCM          = 0,
+  parameter  bit          L1_TAG_SCM          = 0,
   /// Replace the L1 data banks with latch-based SCM.
-  parameter bit          L1_DATA_SCM         = 0,
+  parameter  bit          L1_DATA_SCM         = 0,
   /// Number of pending response beats for the L1 cache.
-  parameter int unsigned NUM_AXI_OUTSTANDING = 2,
+  parameter  int unsigned NUM_AXI_OUTSTANDING = 2,
   /// This reduces area impact at the cost of
   /// increased hassle of having latches in
   /// the design.
   /// i_snitch_icache/gen_prefetcher*i_snitch_icache_l0/data*/Q
-  parameter bit          EARLY_LATCH         = 0,
+  parameter  bit          EARLY_LATCH         = 0,
   /// Tag width of the data determining logic, this can reduce the
   /// the critical path into the L0 cache when small. The trade-off
   /// is a higher miss-rate in case the smaller tag matches more
   /// tags. The tag must be smaller than the necessary L0 tag.
   /// If configured to `-1` the entire tag is used, effectively
   /// disabling this feature.
-  parameter int          L0_EARLY_TAG_WIDTH  = -1,
+  parameter  int          L0_EARLY_TAG_WIDTH  = -1,
   /// Operate L0 cache in slower clock-domain
-  parameter bit          ISO_CROSSING        = 1,
+  parameter  bit          ISO_CROSSING        = 1,
   /// Configuration input types for memory cuts used in implementation.
-  parameter type         sram_cfg_data_t     = logic,
-  parameter type         sram_cfg_tag_t      = logic,
-  parameter type         sram_cfg_out_data_t = logic,
-  parameter type         sram_cfg_out_tag_t  = logic,
+  parameter  type         sram_cfg_data_t     = logic,
+  parameter  type         sram_cfg_tag_t      = logic,
+  parameter  type         sram_cfg_out_data_t = logic,
+  parameter  type         sram_cfg_out_tag_t  = logic,
+  /// If serial lookup is used, only a single sram_cfg input/output will be used
+  localparam int unsigned NUM_SRAM_CFG        = SERIAL_LOOKUP ? 1 : WAY_COUNT,
 
   parameter type axi_req_t = logic,
   parameter type axi_rsp_t = logic
@@ -82,10 +84,10 @@ module snitch_icache
   output logic                     [NR_FETCH_PORTS-1:0] inst_ready_o,
   output logic                     [NR_FETCH_PORTS-1:0] inst_error_o,
 
-  input  sram_cfg_data_t     [CFG.WAY_COUNT-1:0] sram_cfg_data_i,
-  input  sram_cfg_tag_t      [CFG.WAY_COUNT-1:0] sram_cfg_tag_i,
-  output sram_cfg_out_data_t [CFG.WAY_COUNT-1:0] sram_cfg_out_data_o,
-  output sram_cfg_out_tag_t  [CFG.WAY_COUNT-1:0] sram_cfg_out_tag_o,
+  input  sram_cfg_data_t     [NUM_SRAM_CFG-1:0] sram_cfg_data_i,
+  input  sram_cfg_tag_t      [NUM_SRAM_CFG-1:0] sram_cfg_tag_i,
+  output sram_cfg_out_data_t [NUM_SRAM_CFG-1:0] sram_cfg_out_data_o,
+  output sram_cfg_out_tag_t  [NUM_SRAM_CFG-1:0] sram_cfg_out_tag_o,
 
   output axi_req_t axi_req_o,
   input  axi_rsp_t axi_rsp_i
