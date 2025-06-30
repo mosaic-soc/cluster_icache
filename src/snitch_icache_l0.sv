@@ -46,6 +46,7 @@ module snitch_icache_l0
   typedef struct packed {
     logic [CFG.L0_TAG_WIDTH-1:0] tag;
     logic                        vld;
+    logic                        err;
   } tag_t;
 
   logic [CFG.L0_TAG_WIDTH-1:0] addr_tag, addr_tag_prefetch, addr_tag_prefetch_req;
@@ -150,6 +151,7 @@ module snitch_icache_l0
       if (!rst_ni) begin
         tag[i].vld <= 0;
         tag[i].tag <= 0;
+        tag[i].err <= 0;
       end else begin
         if (evict_strb[i]) begin
           tag[i].vld <= 1'b0;
@@ -158,6 +160,7 @@ module snitch_icache_l0
           tag[i].vld <= 1'b0;
         end else if (validate_strb[i]) begin
           tag[i].vld <= 1'b1;
+          tag[i].err <= out_rsp_error_i;
         end
       end
     end
@@ -193,8 +196,10 @@ module snitch_icache_l0
   logic [CFG.LINE_WIDTH-1:0] ins_data;
   always_comb begin : data_muxer
     ins_data = '0;
+    in_error_o = 1'b0;
     for (int unsigned i = 0; i < CFG.L0_LINE_COUNT; i++) begin
       ins_data |= {CFG.LINE_WIDTH{hit[i]}} & data[i];
+      in_error_o |= hit[i] & tag[i].err;
     end
     in_data_o = CFG.FETCH_DW'(
       ins_data >> (in_addr_i[CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW)
@@ -295,8 +300,6 @@ module snitch_icache_l0
   end
 
   assign out_rsp_ready_o = 1'b1;
-
-  assign in_error_o      = '0;
 
   assign out_req_addr_o  = out_req.addr;
   assign out_req_id_o    = CFG.ID_WIDTH'(1'b1 << {L0_ID, out_req.is_prefetch});
