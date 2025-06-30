@@ -315,7 +315,7 @@ module snitch_icache_handler #(
       if (hit_valid) begin
         out_rsp_ready_o = 0;
         in_rsp_data_o   = hit_data;
-        in_rsp_error_o  = 0;
+        in_rsp_error_o  = hit_error;
         in_rsp_id_o     = hit_id;
         in_rsp_valid_o  = 1;
         hit_ready       = in_rsp_ready_i;
