@@ -105,7 +105,7 @@ module snitch_icache_l0
 
   assign evict_because_miss = miss & ~last_cycle_was_miss_q;
   assign evict_because_prefetch = latch_prefetch & ~last_cycle_was_prefetch_q;
-  assign incoming_rsp_is_prefetch = (out_rsp_id_i == ('b1 << {L0_ID, 1'b1}));
+  assign incoming_rsp_is_prefetch = (out_rsp_id_i == (1'b1 << {L0_ID, 1'b1}));
   // If we get a miss, but there is already a prefetch request in flight for the missed line, simply
   // wait for that prefetch response to come in.
   assign prefetching_missed_line = pending_prefetch_q &
@@ -225,10 +225,10 @@ module snitch_icache_l0
 
     // Round-Robin
     if (evict_req) begin
-      evict_strb = CFG.L0_LINE_COUNT'('b1 << cnt_q);
+      evict_strb = CFG.L0_LINE_COUNT'(1'b1 << cnt_q);
       cnt_d      = cnt_q + 1;
       if (evict_strb == hit_early) begin
-        evict_strb = CFG.L0_LINE_COUNT'('b1 << cnt_d);
+        evict_strb = CFG.L0_LINE_COUNT'(1'b1 << cnt_d);
         cnt_d      = cnt_q + 2;
       end
     end
@@ -299,7 +299,7 @@ module snitch_icache_l0
   assign in_error_o      = '0;
 
   assign out_req_addr_o  = out_req.addr;
-  assign out_req_id_o    = CFG.ID_WIDTH'('b1 << {L0_ID, out_req.is_prefetch});
+  assign out_req_id_o    = CFG.ID_WIDTH'(1'b1 << {L0_ID, out_req.is_prefetch});
 
   // Priority arbitrate requests.
   always_comb begin

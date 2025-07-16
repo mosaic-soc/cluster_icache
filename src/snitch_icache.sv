@@ -250,7 +250,7 @@ module snitch_icache
     ) + 1) {inst_cacheable_i[i]}} & {in_bypass_error[i], in_bypass_data[i]});
 
     // ensure the IDs of responses only have those bits set that are set by the L0 cache that receives them, i.e., bits [2*i+1:2*i]
-    assign masked_local_rsp_id = local_prefetch_rsp.id & ('b11 << (2 * i));
+    assign masked_local_rsp_id = local_prefetch_rsp.id & (2'b11 << (2 * i));
 
     snitch_icache_l0 #(
       .CFG  (CFG),
