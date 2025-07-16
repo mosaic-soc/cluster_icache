@@ -114,7 +114,7 @@ module snitch_icache_l0
 
   assign evict_req = evict_because_miss | evict_because_prefetch;
 
-  assign addr_tag = in_addr_i >> CFG.LINE_ALIGN;
+  assign addr_tag = CFG.L0_TAG_WIDTH'(in_addr_i >> CFG.LINE_ALIGN);
 
   // ------------
   // Tag Compare
@@ -151,14 +151,13 @@ module snitch_icache_l0
         tag[i].vld <= 0;
         tag[i].tag <= 0;
       end else begin
-        if (evict_strb[i]) begin
+        if (flush_strb[i]) begin
+          tag[i].vld <= 1'b0;
+        end else if (evict_strb[i]) begin
           tag[i].vld <= 1'b0;
           tag[i].tag <= evict_because_prefetch ? addr_tag_prefetch : addr_tag;
         end else if (validate_strb[i]) begin
           tag[i].vld <= 1'b1;
-        end
-        if (flush_strb[i]) begin
-          tag[i].vld <= 1'b0;
         end
       end
     end
@@ -197,7 +196,7 @@ module snitch_icache_l0
     for (int unsigned i = 0; i < CFG.L0_LINE_COUNT; i++) begin
       ins_data |= {CFG.LINE_WIDTH{hit[i]}} & data[i];
     end
-    in_data_o = ins_data >> (in_addr_i[CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW);
+    in_data_o = CFG.FETCH_DW'(ins_data >> (in_addr_i[CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW));
   end
 
   // Check whether we had an early multi-hit (e.g., the portion of the tag matched
@@ -224,10 +223,10 @@ module snitch_icache_l0
 
     // Round-Robin
     if (evict_req) begin
-      evict_strb = 1 << cnt_q;
+      evict_strb = CFG.L0_LINE_COUNT'('b1 << cnt_q);
       cnt_d      = cnt_q + 1;
       if (evict_strb == hit_early) begin
-        evict_strb = 1 << cnt_d;
+        evict_strb = CFG.L0_LINE_COUNT'('b1 << cnt_d);
         cnt_d      = cnt_q + 2;
       end
     end
@@ -298,7 +297,7 @@ module snitch_icache_l0
   assign in_error_o      = '0;
 
   assign out_req_addr_o  = out_req.addr;
-  assign out_req_id_o    = 'b1 << {L0_ID, out_req.is_prefetch};
+  assign out_req_id_o    = CFG.ID_WIDTH'('b1 << {L0_ID, out_req.is_prefetch});
 
   // Priority arbitrate requests.
   always_comb begin
@@ -419,7 +418,7 @@ module snitch_icache_l0
   assign prefetcher_out.addr = ($signed(base_addr) + offset) >> CFG.LINE_ALIGN << CFG.LINE_ALIGN;
 
   // check whether cache-line we want to pre-fetch is already present
-  assign addr_tag_prefetch   = prefetcher_out.addr >> CFG.LINE_ALIGN;
+  assign addr_tag_prefetch   = CFG.L0_TAG_WIDTH'(prefetcher_out.addr >> CFG.LINE_ALIGN);
 
   assign latch_prefetch      = prefetcher_out.vld & ~prefetch_req_vld_q;
 
@@ -435,7 +434,7 @@ module snitch_icache_l0
     end
   end
 
-  assign addr_tag_prefetch_req = prefetch_req_addr_q >> CFG.LINE_ALIGN;
+  assign addr_tag_prefetch_req = CFG.L0_TAG_WIDTH'(prefetch_req_addr_q >> CFG.LINE_ALIGN);
   assign prefetch.is_prefetch  = 1'b1;
   assign prefetch.addr         = prefetch_req_addr_q;
   assign prefetch_valid        = prefetch_req_vld_q;

@@ -110,8 +110,8 @@ module snitch_icache_handler #(
   // the same time, the pop is updated with the push information and the push
   // discarded.
   always_comb begin : p_pushpop_bypass
-    pending_way = push_enable ? 'b1 << push_index : '0;
-    pending_clr = pop_enable ? 'b1 << pop_index : '0;
+    pending_way = CFG.PENDING_COUNT'(push_enable ? 'b1 << push_index : '0);
+    pending_clr = CFG.PENDING_COUNT'(pop_enable ? 'b1 << pop_index : '0);
     pop_addr    = pending_q[pop_index].addr;
     pop_idmask  = pending_q[pop_index].idmask;
     if (push_enable && pop_enable && push_index == pop_index) begin
