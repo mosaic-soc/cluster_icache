@@ -151,11 +151,11 @@ module snitch_icache_l0
         tag[i].vld <= 0;
         tag[i].tag <= 0;
       end else begin
-        if (flush_strb[i]) begin
-          tag[i].vld <= 1'b0;
-        end else if (evict_strb[i]) begin
+        if (evict_strb[i]) begin
           tag[i].vld <= 1'b0;
           tag[i].tag <= evict_because_prefetch ? addr_tag_prefetch : addr_tag;
+        end else if (flush_strb[i]) begin
+          tag[i].vld <= 1'b0;
         end else if (validate_strb[i]) begin
           tag[i].vld <= 1'b1;
         end
@@ -196,7 +196,9 @@ module snitch_icache_l0
     for (int unsigned i = 0; i < CFG.L0_LINE_COUNT; i++) begin
       ins_data |= {CFG.LINE_WIDTH{hit[i]}} & data[i];
     end
-    in_data_o = CFG.FETCH_DW'(ins_data >> (in_addr_i[CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW));
+    in_data_o = CFG.FETCH_DW'(
+      ins_data >> (in_addr_i[CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW)
+    );
   end
 
   // Check whether we had an early multi-hit (e.g., the portion of the tag matched
