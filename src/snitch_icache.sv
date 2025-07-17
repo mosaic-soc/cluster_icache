@@ -250,7 +250,7 @@ module snitch_icache
     ) + 1) {inst_cacheable_i[i]}} & {in_bypass_error[i], in_bypass_data[i]});
 
     // ensure the IDs of responses only have those bits set that are set by the L0 cache that receives them, i.e., bits [2*i+1:2*i]
-    assign masked_local_rsp_id = local_prefetch_rsp.id & ('b11 << (2 * i));
+    assign masked_local_rsp_id = local_prefetch_rsp.id & (2'b11 << (2 * i));
 
     snitch_icache_l0 #(
       .CFG  (CFG),
@@ -868,8 +868,8 @@ module l0_to_bypass #(
       endcase
     end
     logic [CFG.FILL_DW-1:0] fill_rsp_data;
-    assign fill_rsp_data = refill_rsp_data_i >>
-        (in_addr_i[i][CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW);
+    assign fill_rsp_data = CFG.FILL_DW'(refill_rsp_data_i >>
+        (in_addr_i[i][CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW));
     `FFL({in_data_o[i], in_error_o[i]}, {fill_rsp_data[CFG.FETCH_DW-1:0], refill_rsp_error_i},
          rsp_valid[i], '0, clk_i, rst_ni)
   end
