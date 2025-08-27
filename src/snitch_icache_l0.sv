@@ -12,34 +12,34 @@
 module snitch_icache_l0
   import snitch_icache_pkg::*;
 #(
-  parameter config_t     CFG   = '0,
-  parameter int unsigned L0_ID = 0
+    parameter config_t     CFG   = '0,
+    parameter int unsigned L0_ID = 0
 ) (
-  input logic clk_i,
-  input logic rst_ni,
-  input logic flush_valid_i,
+    input logic clk_i,
+    input logic rst_ni,
+    input logic flush_valid_i,
 
-  input logic enable_prefetching_i,
-  input logic enable_branch_pred_i,
+    input logic enable_prefetching_i,
+    input logic enable_branch_pred_i,
 
-  output icache_l0_events_t icache_events_o,
+    output icache_l0_events_t icache_events_o,
 
-  input  logic [CFG.FETCH_AW-1:0] in_addr_i,
-  input  logic                    in_valid_i,
-  output logic [CFG.FETCH_DW-1:0] in_data_o,
-  output logic                    in_ready_o,
-  output logic                    in_error_o,
+    input  logic [CFG.FETCH_AW-1:0] in_addr_i,
+    input  logic                    in_valid_i,
+    output logic [CFG.FETCH_DW-1:0] in_data_o,
+    output logic                    in_ready_o,
+    output logic                    in_error_o,
 
-  output logic [CFG.FETCH_AW-1:0] out_req_addr_o,
-  output logic [CFG.ID_WIDTH-1:0] out_req_id_o,
-  output logic                    out_req_valid_o,
-  input  logic                    out_req_ready_i,
+    output logic [CFG.FETCH_AW-1:0] out_req_addr_o,
+    output logic [CFG.ID_WIDTH-1:0] out_req_id_o,
+    output logic                    out_req_valid_o,
+    input  logic                    out_req_ready_i,
 
-  input  logic [CFG.LINE_WIDTH-1:0] out_rsp_data_i,
-  input  logic                      out_rsp_error_i,
-  input  logic [  CFG.ID_WIDTH-1:0] out_rsp_id_i,
-  input  logic                      out_rsp_valid_i,
-  output logic                      out_rsp_ready_o
+    input  logic [CFG.LINE_WIDTH-1:0] out_rsp_data_i,
+    input  logic                      out_rsp_error_i,
+    input  logic [  CFG.ID_WIDTH-1:0] out_rsp_id_i,
+    input  logic                      out_rsp_valid_i,
+    output logic                      out_rsp_ready_o
 );
 
   typedef logic [CFG.FETCH_AW-1:0] addr_t;
@@ -141,13 +141,13 @@ module snitch_icache_l0
 
   logic [CFG.LINE_WIDTH-1:0] line_in_q;
   if (CFG.EARLY_LATCH) begin
-      always_ff @(posedge clk_i, negedge rst_ni) begin
-          if (!rst_ni) begin
-              line_in_q <= '0;
-          end else begin
-              line_in_q <= out_rsp_data_i;
-           end
-       end
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (~rst_ni) begin
+        line_in_q <= '0;
+      end else begin
+        line_in_q <= out_rsp_data_i;
+      end
+    end
   end
 
   for (genvar i = 0; i < CFG.L0_LINE_COUNT; i++) begin : gen_array
@@ -171,22 +171,12 @@ module snitch_icache_l0
     end
     if (CFG.EARLY_LATCH) begin : gen_latch
 
-       logic validate_strb_q;
-
-      always_ff @(posedge clk_i, negedge rst_ni) begin
-          if (!rst_ni) begin
-              validate_strb_q <= '0;
-          end else begin
-              validate_strb_q <= validate_strb[i];
-           end
-       end
-
       logic clk_vld;
       tc_clk_gating i_clk_gate (
-        .clk_i    (clk_i),
-        .en_i     (validate_strb_q),
-        .test_en_i(1'b0),
-        .clk_o    (clk_vld)
+          .clk_i    (clk_i),
+          .en_i     (validate_strb[i]),
+          .test_en_i(1'b0),
+          .clk_o    (clk_vld)
       );
       // Data Array
       /* verilator lint_off NOLATCH */
@@ -211,7 +201,7 @@ module snitch_icache_l0
 
   logic [CFG.LINE_WIDTH-1:0] ins_data;
   always_comb begin : data_muxer
-    ins_data = '0;
+    ins_data   = '0;
     in_error_o = 1'b0;
     for (int unsigned i = 0; i < CFG.L0_LINE_COUNT; i++) begin
       ins_data |= {CFG.LINE_WIDTH{hit[i]}} & data[i];
@@ -226,10 +216,10 @@ module snitch_icache_l0
   // multiple entries in the tag array)
   if (CFG.L0_TAG_WIDTH != CFG.L0_EARLY_TAG_WIDTH) begin : gen_multihit_detection
     cc_onehot #(
-      .Width(CFG.L0_LINE_COUNT)
+        .Width(CFG.L0_LINE_COUNT)
     ) i_onehot_hit_early (
-      .d_i        (hit_early),
-      .is_onehot_o(hit_early_is_onehot)
+        .d_i        (hit_early),
+        .is_onehot_o(hit_early_is_onehot)
     );
   end else begin : gen_no_multihit_detection
     assign hit_early_is_onehot = 1'b1;
@@ -388,13 +378,13 @@ module snitch_icache_l0
   assign ins_idx = 32 * taken_idx;
   // Find first taken branch
   lzc #(
-    .WIDTH(FetchPkts),
-    .MODE (0)
+      .WIDTH(FetchPkts),
+      .MODE (0)
   ) i_lzc_branch (
-    // look at branches and jals
-    .in_i   (mask & (is_branch_taken | is_jal)),
-    .cnt_o  (taken_idx),
-    .empty_o(no_prefetch)
+      // look at branches and jals
+      .in_i   (mask & (is_branch_taken | is_jal)),
+      .cnt_o  (taken_idx),
+      .empty_o(no_prefetch)
   );
 
   addr_t base_addr, offset, uj_imm, sb_imm;
