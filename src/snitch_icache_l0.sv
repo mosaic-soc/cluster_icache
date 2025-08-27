@@ -139,14 +139,8 @@ module snitch_icache_l0
   assign hit_prefetch_any = |hit_prefetch;
   assign miss             = ~hit_any & in_valid_i & ~pending_refill_q & ~prefetching_missed_line;
 
-  logic clk_inv;
-  tc_clk_inverter i_clk_inv (
-    .clk_i(clk_i),
-    .clk_o(clk_inv)
-  );
-
+  logic [CFG.LINE_WIDTH-1:0] line_in_q;
   if (CFG.EARLY_LATCH) begin
-      logic [CFG.LINE_WIDTH-1:0] line_in_q;
       always_ff @(posedge clk_i, negedge rst_ni) begin
           if (!rst_ni) begin
               line_in_q <= '0;
