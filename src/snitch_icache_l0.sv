@@ -193,16 +193,16 @@ module snitch_icache_l0
   // we hit in the cache and there was a unique hit.
   assign in_ready_o = hit_any;
 
-  logic [CFG.LINE_WIDTH-1:0] ins_data;
+  logic [minwidth(CFG.LINE_WIDTH,32)-1:0] ins_data;
   always_comb begin : data_muxer
     ins_data = '0;
     in_error_o = 1'b0;
     for (int unsigned i = 0; i < CFG.L0_LINE_COUNT; i++) begin
-      ins_data |= {CFG.LINE_WIDTH{hit[i]}} & data[i];
+      ins_data |= {minwidth(CFG.LINE_WIDTH,1){hit[i]}} & data[i];
       in_error_o |= hit[i] & tag[i].err;
     end
     in_data_o = CFG.FETCH_DW'(
-      ins_data >> (in_addr_i[CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW)
+      ins_data >> (in_addr_i[minwidth(CFG.LINE_ALIGN,3)-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW)
     );
   end
 
@@ -333,7 +333,7 @@ module snitch_icache_l0
   logic [FetchPkts-1:0] is_jal;
   logic [FetchPkts-1:0] mask;
   // make sure that we only look at the packets which are of interest to
-  assign mask = '1 << in_addr_i[CFG.LINE_ALIGN-1:2];
+  assign mask = '1 << in_addr_i[minwidth(CFG.LINE_ALIGN,3)-1:2];
 
   // Instruction aware pre-fetching
   for (genvar i = 0; i < FetchPkts; i++) begin : gen_pre_decode

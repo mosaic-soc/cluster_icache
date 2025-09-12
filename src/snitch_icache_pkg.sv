@@ -6,6 +6,13 @@
 
 package snitch_icache_pkg;
 
+  function automatic int minwidth(int width, int min);
+    if (width >= min) begin
+      return width;
+    end
+    return min;
+  endfunction
+
   typedef struct packed {
     logic l0_miss;
     logic l0_hit;
