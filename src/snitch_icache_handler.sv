@@ -6,7 +6,9 @@
 
 `include "common_cells/registers.svh"
 
-module snitch_icache_handler #(
+module snitch_icache_handler
+  import snitch_icache_pkg::*;
+#(
   parameter snitch_icache_pkg::config_t CFG = '0
 ) (
   input logic clk_i,
@@ -278,7 +280,7 @@ module snitch_icache_handler #(
     pop_index       = out_rsp_id_i;
     pop_enable      = 0;
 
-    write_addr_o    = pop_addr[CFG.LINE_ALIGN+:CFG.COUNT_ALIGN];
+    write_addr_o    = pop_addr[CFG.LINE_ALIGN+:minwidth(CFG.COUNT_ALIGN,1)];
     write_way_o     = evict_index;
     write_data_o    = out_rsp_data_i;
     write_tag_o     = pop_addr[CFG.FETCH_AW-1:CFG.LINE_ALIGN+CFG.COUNT_ALIGN];

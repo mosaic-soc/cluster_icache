@@ -58,8 +58,8 @@ module snitch_icache_lookup_parallel
   // write accesses.
   logic [CFG.COUNT_ALIGN-1:0] ram_addr;
   logic [  CFG.WAY_COUNT-1:0] ram_enable;
-  logic [CFG.LINE_WIDTH-1:0] ram_wdata, ram_rdata[CFG.WAY_COUNT];
-  logic [CFG.TAG_WIDTH+1:0] ram_wtag, ram_rtag[CFG.WAY_COUNT];
+  logic [CFG.LINE_WIDTH-1:0] ram_wdata, ram_rdata[minwidth(CFG.WAY_COUNT, 1)];
+  logic [CFG.TAG_WIDTH+1:0] ram_wtag, ram_rtag[minwidth(CFG.WAY_COUNT, 1)];
   logic                     ram_write;
   logic                     ram_write_q;
   logic [CFG.COUNT_ALIGN:0] init_count_q;
@@ -79,7 +79,7 @@ module snitch_icache_lookup_parallel
     write_ready_o = 0;
     in_ready_o    = 0;
 
-    ram_addr      = in_addr_i[CFG.LINE_ALIGN+:CFG.COUNT_ALIGN];
+    ram_addr      = in_addr_i[CFG.LINE_ALIGN+:minwidth(CFG.COUNT_ALIGN,1)];
     ram_wdata     = write_data_i;
     ram_wtag      = {1'b1, write_error_i, write_tag_i};
     ram_enable    = '0;

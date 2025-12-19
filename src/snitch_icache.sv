@@ -869,7 +869,7 @@ module l0_to_bypass #(
     end
     logic [CFG.FILL_DW-1:0] fill_rsp_data;
     assign fill_rsp_data = CFG.FILL_DW'(refill_rsp_data_i >>
-        (in_addr_i[i][CFG.LINE_ALIGN-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW));
+        (in_addr_i[i][snitch_icache_pkg::minwidth(CFG.LINE_ALIGN,3)-1:CFG.FETCH_ALIGN] * CFG.FETCH_DW));
     `FFL({in_data_o[i], in_error_o[i]}, {fill_rsp_data[CFG.FETCH_DW-1:0], refill_rsp_error_i},
          rsp_valid[i], '0, clk_i, rst_ni)
   end
