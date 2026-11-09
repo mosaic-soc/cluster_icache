@@ -144,7 +144,9 @@ module snitch_icache_l0
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         line_in_q <= '0;
-      end else begin
+      end else if (out_rsp_valid_i) begin
+        // The latch banks open only for a valid refill response. Keep their
+        // input register quiet otherwise, with the same refill-cycle timing.
         line_in_q <= out_rsp_data_i;
       end
     end
