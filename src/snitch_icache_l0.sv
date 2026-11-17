@@ -103,6 +103,8 @@ module snitch_icache_l0
   logic refill_valid, prefetch_valid;
   logic refill_ready, prefetch_ready;
   req_t out_req;
+  req_t arbitrated_req;
+  logic arbitrated_req_valid, arbitrated_req_ready;
 
   assign evict_because_miss = miss & ~last_cycle_was_miss_q;
   assign evict_because_prefetch = latch_prefetch & ~last_cycle_was_prefetch_q;
@@ -311,18 +313,36 @@ module snitch_icache_l0
 
   // Priority arbitrate requests.
   always_comb begin
-    out_req         = prefetch;
-    out_req_valid_o = prefetch_valid;
-    prefetch_ready  = out_req_ready_i;
-    refill_ready    = 1'b0;
+    arbitrated_req       = prefetch;
+    arbitrated_req_valid = prefetch_valid;
+    prefetch_ready       = arbitrated_req_ready;
+    refill_ready         = 1'b0;
 
     if (refill_valid) begin
-      out_req_valid_o = refill_valid;
-      out_req         = refill;
-      refill_ready    = out_req_ready_i;
-      prefetch_ready  = 1'b0;
+      arbitrated_req_valid = refill_valid;
+      arbitrated_req       = refill;
+      refill_ready         = arbitrated_req_ready;
+      prefetch_ready       = 1'b0;
     end
   end
+
+  // A frontend flush may cancel a miss, but an L1 request is irrevocable once
+  // presented. Buffer stalled requests and keep their address and ID until
+  // accepted; do not flush this buffer together with the frontend.
+  fall_through_register #(
+    .T(req_t)
+  ) i_refill_req_buffer (
+    .clk_i,
+    .rst_ni,
+    .clr_i     (1'b0),
+    .testmode_i(1'b0),
+    .valid_i   (arbitrated_req_valid),
+    .ready_o   (arbitrated_req_ready),
+    .data_i    (arbitrated_req),
+    .valid_o   (out_req_valid_o),
+    .ready_i   (out_req_ready_i),
+    .data_o    (out_req)
+  );
 
   // -------------
   // Pre-fetching
